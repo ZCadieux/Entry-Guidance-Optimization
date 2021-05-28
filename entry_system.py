@@ -1,35 +1,57 @@
 import numpy as np
 import omtools.api as ot
-#CURRENT CODE COPIED FROM ASCENT SYSTEM
+
 class EntrySystem(ot.Group):
     def initialize(self):
         #declare non-state values, including constants and L, D, etc
         #L, D, sigma, Omega (at minimum)
+        #what is number of nodes? are commented values necessary?
         self.options.declare('num_nodes', default=1, types=int)
         self.options.declare('R0', default=1., types=(int, float))
         self.options.declare('g0', default=1., types=(int, float))
         self.options.declare('vex', default=1., types=(int, float))
-        self.options.declare('w2', default=1., types=(int, float))
+        #self.options.declare('w2', default=1., types=(int, float))
         self.options.declare('m_scale', default=1., types=(int, float))
+
+        self.options.declare('D', default=1., types=(int, float))
+        self.options.declare('L', default=1., types=(int, float))
+        self.options.declare('sigma', default=1., types=(int, float))
+        self.options.declare('Omega', default=1., types=(int, float))
+        self.options.declare('flatten', default=1., types=(int, float))
+        self.options.declare('density', default=1., types=(int, float))
+        self.options.declare('Vsound', default=1., types=(int, float))
 
     def setup(self):
         #define values from initialize
         num = self.options['num_nodes']
-        g0 = self.options['g0']
         R0 = self.options['R0']
+        g0 = self.options['g0']
         vex = self.options['vex']
-        w2 = self.options['w2']
+        #w2 = self.options['w2']
         m_scale = self.options['m_scale']
+
+        D = self.options['D']
+        L = self.options['L']
+        sigma = self.options['sigma']
+        Omega = self.options['Omega']
+        flatten = self.options['flatten']
+        density = self.options['density']
+        Vsound = self.options['Vsound']
 
         #declare state variables (inputs)
         #entry state variables would be r, V, gamma, psi, phi, theta
-        rx = self.declare_input('rx', shape=(num,1))
-        ry = self.declare_input('ry', shape=(num,1))
-        rz = self.declare_input('rz', shape=(num,1))
-        Vx = self.declare_input('Vx', shape=(num,1))
-        Vy = self.declare_input('Vy', shape=(num,1))
-        Vz = self.declare_input('Vz', shape=(num,1))
+        r = self.declare_input('r', shape=(num,1))
+        theta = self.declare_input('theta', shape=(num,1))
+        phi = self.declare_input('phi', shape=(num,1))
+        V = self.declare_input('V', shape=(num,1))
+        gamma = self.declare_input('gamma', shape=(num,1))
+        psi = self.declare_input('psi', shape=(num,1))
+
+        #mass value (still necessary? carried over from ascent problem)
         m = self.declare_input('m', shape=(num,1))
+
+        #control variables, unit vector and thrust value
+        #in entry case, control variable is sigma, bank angle
         ux = self.declare_input('ux', shape=(num,1))
         uy = self.declare_input('uy', shape=(num,1))
         uz = self.declare_input('uz', shape=(num,1))
@@ -37,27 +59,28 @@ class EntrySystem(ot.Group):
 
         #define state equations
         #based on dynamics
-        drx_dt = 1. * Vx
-        dry_dt = 1. * Vy
-        drz_dt = 1. * Vz
-        dVx_dt = - w2 * rx + (T * ux) / (m * m_scale * g0)
-        dVy_dt = - w2 * ry + (T * uy) / (m * m_scale * g0)
-        dVz_dt = - w2 * rz + (T * uz) / (m * m_scale * g0)
+        dr_dt = V * ot.sin(gamma) #Equ 12
+        dtheta_dt = V * ot.cos(gamma) * ot.sin(psi) / (r * ot.cos(phi)) #Equ 13
+        dphi_dt = V * ot.cos(gamma) * ot.cos(psi) / r #Equ 14
+        dV_dt = -D - (ot.sin(gamma) / r^2) + Omega^2 * r * ot.cos(phi) * \
+            (ot.sin(gamma) * ot.cos(phi) - ot.cos(gamma) * ot.sin(phi) * ot.cos(psi)) #Equ 15
+        dgamma_dt = (1./V)*(L * ot.cos(sigma) + (V^2 - 1./r)*(ot.cos(gamma)/r) + \
+            2. * Omega * V*ot.cos(phi)*ot.sin(psi) + Omega^2*r*ot.cos(phi) * \
+            (ot.cos(gamma)*ot.cos(phi) + ot.sin(gamma)*ot.cos(psi)*ot.sin(phi))) #Equ 16
+        dpsi_dt = (1./V)*(L*ot.sin(sigma)/ot.cos(gamma) + (V^2/r)*ot.cos(gamma)* \
+            ot.sin(psi)*ot.tan(phi) - 2.*Omega*V*(ot.tan(gamma)*ot.cos(psi)*ot.cos(phi) - \
+            ot.sin(phi)) + (Omega^2*r/ot.cos(gamma))*ot.sin(psi)*ot.sin(phi)*ot.cos(phi)) #Equ 17
+        
+        #mass flow
         dm_dt = - (T / (m_scale * vex)) * np.sqrt(R0/g0)
-
-        # Thrust acceleration used instead of thrust
-        # dVx_dt = - w2 * rx + (T * ux) / (m * g0)
-        # dVy_dt = - w2 * ry + (T * uy) / (m * g0)
-        # dVz_dt = - w2 * rz + (T * uz) / (m * g0)
-        # dm_dt = - (T / vex) * np.sqrt(R0/g0) #* (ux**2 + uy**2 + uz**2)
 
         #define outputs (derivatives)
         #time derivatives of state variables
-        self.register_output('drx_dt', drx_dt)
-        self.register_output('dry_dt', dry_dt)
-        self.register_output('drz_dt', drz_dt)
-        self.register_output('dVx_dt', dVx_dt)
-        self.register_output('dVy_dt', dVy_dt)
-        self.register_output('dVz_dt', dVz_dt)
+        self.register_output('dr_dt', dr_dt)
+        self.register_output('dtheta_dt', dtheta_dt)
+        self.register_output('dphi_dt', dphi_dt)
+        self.register_output('dV_dt', dV_dt)
+        self.register_output('dgamma_dt', dgamma_dt)
+        self.register_output('dpsi_dt', dpsi_dt)
+
         self.register_output('dm_dt', dm_dt)
-        # self.create_indep_var('dm_dt',val=dm_dt, shape=(num,1))
