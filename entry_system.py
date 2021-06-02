@@ -29,12 +29,12 @@ class EntrySystem(ot.Group):
         #w2 = self.options['w2']
         m_scale = self.options['m_scale']
 
-        D = self.options['D']
+        D = self.options['D'] #bring these in from function?
         L = self.options['L']
         Omega = self.options['Omega']
-        flatten = self.options['flatten']
-        density = self.options['density']
-        Vsound = self.options['Vsound']
+        #flatten = self.options['flatten']
+        #density = self.options['density']
+        #Vsound = self.options['Vsound']
 
         #declare state variables (inputs)
         #entry state variables would be r, V, gamma, psi, phi, theta
@@ -86,6 +86,7 @@ class EntrySystem(ot.Group):
         self.register_output('dm_dt', dm_dt)
 
     def varEval(r, V, self):
+        #correct setup and placement? Use of parameters?
         R0 = self.options['R0']
         flatten = self.options['flatten']
         area = 159.94
