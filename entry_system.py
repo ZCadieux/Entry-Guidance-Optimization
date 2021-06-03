@@ -39,14 +39,14 @@ class EntrySystem(ot.Group):
         dr_dt = V * ot.sin(gamma) #Equ 12
         dtheta_dt = V * ot.cos(gamma) * ot.sin(psi) / (r * ot.cos(phi)) #Equ 13
         dphi_dt = V * ot.cos(gamma) * ot.cos(psi) / r #Equ 14
-        dV_dt = -D - (ot.sin(gamma) / r^2) + Omega^2 * r * ot.cos(phi) * \
+        dV_dt = -D - (ot.sin(gamma) / r**2) + Omega**2 * r * ot.cos(phi) * \
             (ot.sin(gamma) * ot.cos(phi) - ot.cos(gamma) * ot.sin(phi) * ot.cos(psi)) #Equ 15
-        dgamma_dt = (1./V)*(L * ot.cos(sigma) + (V^2 - 1./r)*(ot.cos(gamma)/r) + \
-            2. * Omega * V*ot.cos(phi)*ot.sin(psi) + Omega^2*r*ot.cos(phi) * \
+        dgamma_dt = (1./V)*(L * ot.cos(sigma) + (V**2 - 1./r)*(ot.cos(gamma)/r) + \
+            2. * Omega * V*ot.cos(phi)*ot.sin(psi) + Omega**2*r*ot.cos(phi) * \
             (ot.cos(gamma)*ot.cos(phi) + ot.sin(gamma)*ot.cos(psi)*ot.sin(phi))) #Equ 16
-        dpsi_dt = (1./V)*(L*ot.sin(sigma)/ot.cos(gamma) + (V^2/r)*ot.cos(gamma)* \
+        dpsi_dt = (1./V)*(L*ot.sin(sigma)/ot.cos(gamma) + (V**2/r)*ot.cos(gamma)* \
             ot.sin(psi)*ot.tan(phi) - 2.*Omega*V*(ot.tan(gamma)*ot.cos(psi)*ot.cos(phi) - \
-            ot.sin(phi)) + (Omega^2*r/ot.cos(gamma))*ot.sin(psi)*ot.sin(phi)*ot.cos(phi)) #Equ 17
+            ot.sin(phi)) + (Omega**2*r/ot.cos(gamma))*ot.sin(psi)*ot.sin(phi)*ot.cos(phi)) #Equ 17
         
 
         #define outputs (derivatives)
