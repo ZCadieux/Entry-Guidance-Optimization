@@ -7,14 +7,16 @@ class EntryFunctions(ot.Group):
         self.options.declare('num_nodes', default=1, types=int)
         self.options.declare('R0', default=1., types=(int, float))
         self.options.declare('flatten', default=1., types=(int, float))
+        self.options.declare('area', default = 1., types=(int, float))
 
 
     def setup(self):
         #only necessary if using geodetic
         #R0 = self.options['R0']
         #flatten = self.options['flatten']
+
         num = self.options['num_nodes']
-        area = 159.94 #from vehicle data
+        area = self.options['area']
 
         #instead of as parameters to setup function, should this be declared here?
         r = self.declare_input('r', shape=(num,1)) #radial distance from center of Mars
@@ -34,7 +36,8 @@ class EntryFunctions(ot.Group):
         E = 7.041319756467658e-8; F = -0.04399163896948651
         G = 0.0006555968430113561; H = -3.709114148189494e-6
         I = 8.137552734673534e-9
-        density = np.exp((A+r*(B+r*(C+r*(D+r*E))))/(1.0+r*(F+r*(G+r*(H+r*I))))) #density
+        r = r/1000 #convert from m to km
+        density = ot.exp((A+r*(B+r*(C+r*(D+r*E))))/(1.0+r*(F+r*(G+r*(H+r*I))))) #density
 
         #Step 3, use fit polynomial for Vsound
         A = 3.90812820e2; B = -5.07169986e3
@@ -42,24 +45,25 @@ class EntryFunctions(ot.Group):
         E = 1.27052434e6; F = -2.47999976e6
         G = 2.74880412e6; H = -1.60759656e6
         I = 3.84982694e5
-        if r < 10000:
-            x  = 10000.
-        elif r > 130000:
-            x = 130000.
-        else:
-            x = r
-        x = x*1000/130081.410992
+        r = r*1000. #convert from km to m
+        #if r < 10000:
+        #    x  = 10000.
+        #elif r > 130000:
+        #    x = 130000.
+        #else:
+        #    x = r
+        x = r/130081.410992 #normalize
         Vsound = A + x*(B + x*(C + x*(D + x*(E + x*(F + x*(G + x*(H + I*x))))))) #speed of sound
 
         #Step 4, find CL, CD
         x = V/Vsound #find mach number
-        if x < 2:
-            x = 2
-        elif x > 12:
-            x = 12
+        #if x < 2.:
+        #    x = 2.
+        #elif x > 12.:
+        #    x = 12.
         A = -1.718628628451222; B = -0.1377158161003165
         C = 1.083905623513791; D = 7.069525902496836; E = -10.24433210397554
-        C_L = A + B*x + C*np.sqrt(x) + D*x**(-3/2) + E*np.exp(-x)
+        C_L = A + B*x + C*x**1/2 + D*x**(-3/2) + E*ot.exp(-x)
 
         xinv = 1./x; A = 1.015355733524931; B = -0.04826676756876537
         C = 1.381399436898735; D = -0.9962918706041476
@@ -70,6 +74,9 @@ class EntryFunctions(ot.Group):
         lift = C_L * coeff #lift
         drag = C_D * coeff #drag
 
+        self.register_output('C_L', C_L)
+        self.register_output('C_D', C_D)
         self.register_output('lift', lift)
         self.register_output('drag', drag)
-        #instead of as a return, should this be outputted here?
+        self.register_output('density', density)
+        self.register_output('Vsound', Vsound)

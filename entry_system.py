@@ -29,7 +29,7 @@ class EntrySystem(ot.Group):
         #in entry case, control variable is sigma, bank angle
         sigma = self.declare_input('sigma', shape =(num, 1))
 
-        #define values from initialize
+        #define values from initialize REDO THIS
         vars =  EF.setup(r,V,self)
         D = vars[3]
         L = vars[2]
