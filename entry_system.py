@@ -1,6 +1,6 @@
 import numpy as np
 import omtools.api as ot
-from entry_functions import EntryFunction as EF
+#from entry_functions import EntryFunction as EF
 
 class EntrySystem(ot.Group):
     def initialize(self):
@@ -15,6 +15,8 @@ class EntrySystem(ot.Group):
     def setup(self):
         num = self.options['num_nodes']
         Omega = self.options['Omega']
+        D = self.options['D']
+        L = self.options['L']
 
         #declare state variables (inputs)
         #entry state variables would be r, V, gamma, psi, phi, theta
@@ -30,9 +32,9 @@ class EntrySystem(ot.Group):
         sigma = self.declare_input('sigma', shape =(num, 1))
 
         #define values from initialize REDO THIS
-        vars =  EF.setup(r,V,self)
-        D = vars[3]
-        L = vars[2]
+        #vars =  EF.setup(r,V,self)
+        #D = vars[3]
+        #L = vars[2]
 
         #define state equations
         #based on dynamics
