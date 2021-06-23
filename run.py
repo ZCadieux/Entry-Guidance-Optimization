@@ -7,7 +7,7 @@ from entry_functions import EntryFunctions
 from entry_system import EntrySystem
 
 # Test Case 1
-if 1:
+if 0:
     alt = 423819.5625 # geodetic altitude (ft)
     lon = -175.80 # longitude (deg)
     lat = -22.4 # geodetic latitude (deg)
@@ -24,7 +24,7 @@ if 1:
  
 
 # Test Case 2
-if 0:
+if 1:
     alt = 125000.0  # geodetic altitude (m)
     lon = -176.40167 # longitude (deg)
     lat = -21.3 # geodetic latitude (deg)

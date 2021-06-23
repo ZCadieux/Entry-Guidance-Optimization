@@ -1,12 +1,10 @@
 import numpy as np
 import omtools.api as ot
-#from entry_functions import EntryFunction as EF
 
 class EntrySystem(ot.Group):
     def initialize(self):
         #declare non-state values, including constants and L, D, etc
         #L, D, sigma, Omega (at minimum)
-        #what is number of nodes? are commented values necessary?
         self.options.declare('num_nodes', default=1, types=int)
         self.options.declare('D', default=1., types=(int, float))
         self.options.declare('L', default=1., types=(int, float))
@@ -19,7 +17,7 @@ class EntrySystem(ot.Group):
         L = self.options['L']
 
         #declare state variables (inputs)
-        #entry state variables would be r, V, gamma, psi, phi, theta
+        #entry state variables would be r, theta, phi, V, gamma, psi
         r = self.declare_input('r', shape=(num,1)) #radial distance from center of Mars
         theta = self.declare_input('theta', shape=(num,1)) #longitude
         phi = self.declare_input('phi', shape=(num,1)) #latitude
@@ -27,17 +25,11 @@ class EntrySystem(ot.Group):
         gamma = self.declare_input('gamma', shape=(num,1)) #flight-path angle of Mars relative velocity
         psi = self.declare_input('psi', shape=(num,1)) #heading angle of Mars relative velocity
 
-        #control variables, unit vector and thrust value
-        #in entry case, control variable is sigma, bank angle
+        #sigma (bank angle) is control variable
         sigma = self.declare_input('sigma', shape =(num, 1))
 
-        #define values from initialize REDO THIS
-        #vars =  EF.setup(r,V,self)
-        #D = vars[3]
-        #L = vars[2]
-
         #define state equations
-        #based on dynamics
+        #based on dynamics, from Entry Guidance paper
         dr_dt = V * ot.sin(gamma) #Equ 12
         dtheta_dt = V * ot.cos(gamma) * ot.sin(psi) / (r * ot.cos(phi)) #Equ 13
         dphi_dt = V * ot.cos(gamma) * ot.cos(psi) / r #Equ 14
